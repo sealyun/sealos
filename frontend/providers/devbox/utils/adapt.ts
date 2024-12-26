@@ -1,13 +1,13 @@
-import dayjs from 'dayjs'
+import dayjs from 'dayjs';
 
 import {
   devboxReleaseStatusMap,
   devboxStatusMap,
   PodStatusEnum,
   podStatusMap
-} from '@/constants/devbox'
-import { GetDevboxByNameReturn } from '@/types/adapt'
-import { DBListItemType, KbPgClusterType } from '@/types/cluster'
+} from '@/constants/devbox';
+import { GetDevboxByNameReturn } from '@/types/adapt';
+import { DBListItemType, KbPgClusterType } from '@/types/cluster';
 import {
   DevboxDetailType,
   DevboxDetailTypeV2,
@@ -15,14 +15,15 @@ import {
   DevboxListItemTypeV2,
   DevboxVersionListItemType,
   PodDetailType
-} from '@/types/devbox'
+} from '@/types/devbox';
 
-import { AppListItemType } from '@/types/app'
-import { IngressListItemType } from '@/types/ingress'
-import { V1Deployment, V1Ingress, V1Pod, V1StatefulSet } from '@kubernetes/client-node'
+import { AppListItemType } from '@/types/app';
+import { IngressListItemType } from '@/types/ingress';
+import { V1Deployment, V1Ingress, V1Pod, V1StatefulSet } from '@kubernetes/client-node';
 
-import { KBDevboxReleaseType, KBDevboxType, KBDevboxTypeV2 } from '@/types/k8s'
-import { calculateUptime, cpuFormatToM, formatPodTime, memoryFormatToMi } from '@/utils/tools'
+import { KBDevboxReleaseType, KBDevboxType, KBDevboxTypeV2 } from '@/types/k8s';
+import { calculateUptime, cpuFormatToM, formatPodTime, memoryFormatToMi } from '@/utils/tools';
+import { gpuNodeSelectorKey, gpuResourceKey } from '../constants/devbox';
 
 export const adaptDevboxListItem = (devbox: KBDevboxType): DevboxListItemType => {
   return {
@@ -56,14 +57,16 @@ export const adaptDevboxListItem = (devbox: KBDevboxType): DevboxListItemType =>
             ? devbox.status.state.terminated.reason
             : ''
         : ''
-  }
-}
-export const adaptDevboxListItemV2 = ([devbox, template]: [KBDevboxTypeV2, {
-  templateRepository: {
-    iconId: string | null;
   };
-  uid: string;
-}
+};
+export const adaptDevboxListItemV2 = ([devbox, template]: [
+  KBDevboxTypeV2,
+  {
+    templateRepository: {
+      iconId: string | null;
+    };
+    uid: string;
+  }
 ]): DevboxListItemTypeV2 => {
   return {
     id: devbox.metadata?.uid || ``,
@@ -95,8 +98,8 @@ export const adaptDevboxListItemV2 = ([devbox, template]: [KBDevboxTypeV2, {
             ? devbox.status.state.terminated.reason
             : ''
         : ''
-  }
-}
+  };
+};
 export const adaptDevboxDetail = (
   devbox: KBDevboxType & { portInfos: any[] }
 ): DevboxDetailType => {
@@ -114,6 +117,11 @@ export const adaptDevboxDetail = (
     createTime: dayjs(devbox.metadata.creationTimestamp).format('YYYY-MM-DD HH:mm'),
     cpu: cpuFormatToM(devbox.spec.resource.cpu),
     memory: memoryFormatToMi(devbox.spec.resource.memory),
+    gpu: {
+      type: devbox.spec.nodeSelector?.[gpuNodeSelectorKey] || '',
+      amount: Number(devbox.spec.resource[gpuResourceKey] || 1),
+      manufacturers: 'nvidia'
+    },
     usedCpu: {
       name: '',
       xData: new Array(30).fill(0),
@@ -133,15 +141,18 @@ export const adaptDevboxDetail = (
             ? devbox.status.state.terminated.reason
             : ''
         : ''
-  }
-}
-export const adaptDevboxDetailV2 = (
-  [devbox, portInfos, template]: GetDevboxByNameReturn
-): DevboxDetailTypeV2 => {
-  console.log('adaptDevboxDetailV2')
-  const status =       devbox.status.phase && devboxStatusMap[devbox.status.phase]
-  ? devboxStatusMap[devbox.status.phase]
-  : devboxStatusMap.Error
+  };
+};
+export const adaptDevboxDetailV2 = ([
+  devbox,
+  portInfos,
+  template
+]: GetDevboxByNameReturn): DevboxDetailTypeV2 => {
+  console.log('adaptDevboxDetailV2');
+  const status =
+    devbox.status.phase && devboxStatusMap[devbox.status.phase]
+      ? devboxStatusMap[devbox.status.phase]
+      : devboxStatusMap.Error;
   return {
     id: devbox.metadata?.uid || ``,
     name: devbox.metadata.name || 'devbox',
@@ -177,8 +188,8 @@ export const adaptDevboxDetailV2 = (
             ? devbox.status.state.terminated.reason
             : ''
         : ''
-  }
-}
+  };
+};
 export const adaptDevboxVersionListItem = (
   devboxRelease: KBDevboxReleaseType
 ): DevboxVersionListItemType => {
@@ -193,8 +204,8 @@ export const adaptDevboxVersionListItem = (
         ? devboxReleaseStatusMap[devboxRelease.status.phase]
         : devboxReleaseStatusMap.Failed,
     description: devboxRelease.spec.notes || 'release notes'
-  }
-}
+  };
+};
 export const adaptDevboxVersionListItemV2 = (
   devboxRelease: KBDevboxReleaseType
 ): DevboxVersionListItemType => {
@@ -209,8 +220,8 @@ export const adaptDevboxVersionListItemV2 = (
         ? devboxReleaseStatusMap[devboxRelease.status.phase]
         : devboxReleaseStatusMap.Failed,
     description: devboxRelease.spec.notes || 'release notes'
-  }
-}
+  };
+};
 
 export const adaptPod = (pod: V1Pod): PodDetailType => {
   return {
@@ -218,41 +229,41 @@ export const adaptPod = (pod: V1Pod): PodDetailType => {
     podName: pod.metadata?.name || 'pod name',
     upTime: calculateUptime(pod.metadata?.creationTimestamp || new Date()),
     status: (() => {
-      const container = pod.status?.containerStatuses || []
+      const container = pod.status?.containerStatuses || [];
       if (container.length > 0) {
-        const stateObj = container[0].state
+        const stateObj = container[0].state;
         if (stateObj) {
-          const stateKeys = Object.keys(stateObj)
-          const key = stateKeys[0] as `${PodStatusEnum}`
+          const stateKeys = Object.keys(stateObj);
+          const key = stateKeys[0] as `${PodStatusEnum}`;
           if (key === PodStatusEnum.running) {
-            return podStatusMap[PodStatusEnum.running]
+            return podStatusMap[PodStatusEnum.running];
           }
           if (key && podStatusMap[key]) {
             return {
               ...podStatusMap[key],
               ...stateObj[key]
-            }
+            };
           }
         }
       }
-      return podStatusMap.waiting
+      return podStatusMap.waiting;
     })(),
     containerStatus: (() => {
-      const container = pod.status?.containerStatuses || []
+      const container = pod.status?.containerStatuses || [];
       if (container.length > 0) {
-        const lastStateObj = container[0].lastState
+        const lastStateObj = container[0].lastState;
         if (lastStateObj) {
-          const lastStateKeys = Object.keys(lastStateObj)
-          const key = lastStateKeys[0] as `${PodStatusEnum}`
+          const lastStateKeys = Object.keys(lastStateObj);
+          const key = lastStateKeys[0] as `${PodStatusEnum}`;
           if (key && podStatusMap[key]) {
             return {
               ...podStatusMap[key],
               ...lastStateObj[key]
-            }
+            };
           }
         }
       }
-      return podStatusMap.waiting
+      return podStatusMap.waiting;
     })(),
     nodeName: pod.spec?.nodeName || 'node name',
     ip: pod.status?.podIP || 'pod ip',
@@ -270,8 +281,8 @@ export const adaptPod = (pod: V1Pod): PodDetailType => {
     },
     cpu: cpuFormatToM(pod.spec?.containers?.[0]?.resources?.limits?.cpu || '0'),
     memory: memoryFormatToMi(pod.spec?.containers?.[0]?.resources?.limits?.memory || '0')
-  }
-}
+  };
+};
 
 export const adaptDBListItem = (db: KbPgClusterType): DBListItemType => {
   return {
@@ -284,21 +295,21 @@ export const adaptDBListItem = (db: KbPgClusterType): DBListItemType => {
     storage:
       db.spec?.componentSpecs?.[0]?.volumeClaimTemplates?.[0]?.spec?.resources?.requests?.storage ||
       '-'
-  }
-}
+  };
+};
 
 export const adaptIngressListItem = (ingress: V1Ingress): IngressListItemType => {
-  const firstRule = ingress.spec?.rules?.[0]
-  const firstPath = firstRule?.http?.paths?.[0]
-  const protocol = ingress.metadata?.annotations?.['nginx.ingress.kubernetes.io/backend-protocol']
+  const firstRule = ingress.spec?.rules?.[0];
+  const firstPath = firstRule?.http?.paths?.[0];
+  const protocol = ingress.metadata?.annotations?.['nginx.ingress.kubernetes.io/backend-protocol'];
   return {
     name: ingress.metadata?.name || '',
     namespace: ingress.metadata?.namespace || '',
     address: firstRule?.host || '',
     port: firstPath?.backend?.service?.port?.number || 0,
     protocol: protocol || 'http'
-  }
-}
+  };
+};
 
 export const adaptAppListItem = (app: V1Deployment & V1StatefulSet): AppListItemType => {
   return {
@@ -309,5 +320,22 @@ export const adaptAppListItem = (app: V1Deployment & V1StatefulSet): AppListItem
       app?.metadata?.annotations?.originImageName ||
       app.spec?.template?.spec?.containers?.[0]?.image ||
       ''
-  }
-}
+  };
+};
+
+export const sliderNumber2MarkList = ({
+  val,
+  type,
+  gpuAmount = 1
+}: {
+  val: number[];
+  type: 'cpu' | 'memory';
+  gpuAmount?: number;
+}) => {
+  const newVal = val.map((item) => item * gpuAmount);
+
+  return newVal.map((item) => ({
+    label: type === 'memory' ? (item >= 1024 ? `${item / 1024} G` : `${item} M`) : `${item / 1000}`,
+    value: item
+  }));
+};
