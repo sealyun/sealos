@@ -20,6 +20,7 @@ export type CommonConfigType = {
   objectstorageUrl: string;
   applaunchpadUrl: string;
   dbproviderUrl: string;
+  trackingEnabled: boolean;
 };
 export type CommonClientConfigType = DeepRequired<
   Omit<
@@ -64,7 +65,6 @@ export type LayoutConfigType = {
   customerServiceURL?: string;
   forcedLanguage?: string;
   currencySymbol?: 'shellCoin' | 'cny' | 'usd';
-
   protocol?: ProtocolConfigType;
   common: {
     githubStarEnabled: boolean;
@@ -194,6 +194,11 @@ export type DesktopConfigType<T = AuthConfigType> = {
   };
 };
 
+export type TrackingConfigType = {
+  websiteId?: string;
+  hostUrl?: string;
+};
+
 export type RealNameOSSConfigType = {
   accessKey: string;
   accessKeySecret: string;
@@ -209,17 +214,20 @@ export type AppConfigType = {
   common: CommonConfigType;
   database: DatabaseConfigType;
   desktop: DesktopConfigType;
+  tracking: TrackingConfigType;
   realNameOSS: RealNameOSSConfigType;
 };
 
 export type AppClientConfigType = {
   cloud: CloudConfigType;
   common: CommonClientConfigType;
+  tracking: Required<TrackingConfigType>;
   desktop: DesktopConfigType<AuthClientConfigType>;
 };
 
 export const DefaultCommonClientConfig: CommonClientConfigType = {
   enterpriseRealNameAuthEnabled: false,
+  trackingEnabled: false,
   enterpriseSupportingMaterials: '',
   realNameAuthEnabled: false,
   realNameReward: 0,
@@ -309,10 +317,13 @@ export const DefaultAuthClientConfig: AuthClientConfigType = {
   },
   billingToken: ''
 };
-
 export const DefaultAppClientConfig: AppClientConfigType = {
   cloud: DefaultCloudConfig,
   common: DefaultCommonClientConfig,
+  tracking: {
+    websiteId: '',
+    hostUrl: ''
+  },
   desktop: {
     layout: DefaultLayoutConfig,
     auth: DefaultAuthClientConfig

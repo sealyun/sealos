@@ -1,6 +1,7 @@
-import { Head, Html, Main, NextScript } from 'next/document';
-import { ColorModeScript } from '@chakra-ui/react';
 import { theme } from '@/styles/chakraTheme';
+import { ColorModeScript } from '@chakra-ui/react';
+import { Head, Html, Main, NextScript } from 'next/document';
+import Script from 'next/script';
 
 export default function Document() {
   return (
@@ -28,6 +29,11 @@ export default function Document() {
         <ColorModeScript initialColorMode={theme.config.initialColorMode} />
         <Main />
         <NextScript />
+        <Script
+          defer
+          src="https://umami-damoxzso.sealoshzh.site/script.js"
+          data-website-id="f76f351f-9fc7-40db-84d8-500a673436bb"
+        />
       </body>
     </Html>
   );
