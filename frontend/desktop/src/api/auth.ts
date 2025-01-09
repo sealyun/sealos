@@ -186,13 +186,16 @@ export const _enterpriseRealNameAuthRequest = (request: AxiosInstance) => (data:
 
 export const _getAmount = (request: AxiosInstance) => () =>
   request<never, ApiResp<{ balance: number; deductionBalance: number }>>('/api/account/getAmount');
-
+export const _verifyToken = (request: AxiosInstance) => () =>
+  request<never, ApiResp<null>>('/api/auth/verify');
 export const passwordExistRequest = _passwordExistRequest(request);
 export const passwordLoginRequest = _passwordLoginRequest(request, (token) => {
   useSessionStore.setState({ token });
 });
+
 export const passwordModifyRequest = _passwordModifyRequest(request);
 export const UserInfo = _UserInfo(request);
+export const verifyToken = _verifyToken(request);
 export const regionList = _regionList(request);
 
 export const getSmsBindCodeRequest = _getSmsBindCodeRequest(request);
